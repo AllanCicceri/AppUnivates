@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:univates_app/db/sqllite.dart';
@@ -144,6 +145,19 @@ class _UserFormState extends State<UserForm> {
                           bool saved = await _saveData(updatedUser);
 
                           if (saved) {
+                            int userCount = await _getUserCount();
+                            bool notifyUserCount = (userCount % 10 == 0);
+                            if (notifyUserCount) {
+                              AwesomeNotifications().createNotification(
+                                  content: NotificationContent(
+                                id: 1,
+                                channelKey: "users_channel",
+                                title: "Contagem de usuários",
+                                body:
+                                    "Você possui $userCount usuários cadastrados!",
+                              ));
+                            }
+
                             Navigator.pop(super.context, true);
                           }
                         }
@@ -177,4 +191,10 @@ class _UserFormState extends State<UserForm> {
 
     return (dbReturn > 0 ? true : false);
   }
+}
+
+Future<int> _getUserCount() async {
+  DatabaseHelper db = DatabaseHelper();
+  List<Map<String, dynamic>> result = await db.query('usuario');
+  return result.length;
 }
